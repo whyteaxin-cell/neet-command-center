@@ -23,6 +23,26 @@ main{max-width:1200px;margin:auto;padding:10px 5vw 60px}
 .premium{margin-top:18px;padding:20px;display:flex;justify-content:space-between;gap:20px;align-items:center;background:linear-gradient(100deg,#102b46,#17203b);border:1px solid #28517a;border-radius:20px}.premium h3{margin:0 0 5px}.premium p{margin:0;color:var(--muted)}.gold{background:linear-gradient(135deg,#ffd65a,#ff9f43);color:#16100a}
 @media(max-width:850px){#planner>div:nth-child(2){grid-template-columns:1fr!important}.hero{grid-template-columns:1fr}.subjects{grid-template-columns:repeat(2,1fr)}.topic{grid-template-columns:28px 1fr 80px}.topic .mcq,.topic .time{display:none}.analytics{grid-template-columns:1fr}}
 @media(max-width:500px){.subjects{grid-template-columns:1fr 1fr}.subject{padding:13px}.topic{grid-template-columns:25px 1fr 72px}.hero .panel{padding:18px}}
+
+/* ===== Dynamic Statistics Dashboard ===== */
+.statsDash{margin-top:18px}
+.statsTop{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.statCard{background:#091525;border:1px solid var(--line);border-radius:16px;padding:16px}
+.statCard .k{color:var(--muted);font-size:11px;font-weight:900;letter-spacing:.7px}
+.statCard .v{font-size:25px;font-weight:900;margin-top:5px}
+.statCard .s{font-size:11px;color:var(--muted);margin-top:4px}
+.statsToolbar{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 12px}
+.statsToolbar button.active{background:#214d73;border:1px solid var(--blue)}
+.chartBox{background:#091525;border:1px solid var(--line);border-radius:16px;padding:14px;overflow:hidden}
+.chartBox canvas{display:block;width:100%;height:220px}
+.subjectBars{display:grid;gap:12px;margin-top:14px}
+.sbarRow{display:grid;grid-template-columns:90px 1fr 52px;gap:10px;align-items:center;font-size:12px}
+.sbarTrack{height:10px;background:#15283c;border-radius:99px;overflow:hidden}
+.sbarFill{height:100%;background:linear-gradient(90deg,var(--blue),#73c7ff);border-radius:99px}
+.insight{margin-top:14px;padding:13px 15px;border:1px solid var(--line);border-radius:14px;background:#0b1828;color:var(--muted);line-height:1.5}
+@media(max-width:850px){.statsTop{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.statsTop{grid-template-columns:1fr 1fr}.statCard{padding:13px}.statCard .v{font-size:21px}.sbarRow{grid-template-columns:70px 1fr 45px}}
+
 </style>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#07101d"><link rel="icon" href="icon-192.png"></head>
 <body>
@@ -90,11 +110,50 @@ main{max-width:1200px;margin:auto;padding:10px 5vw 60px}
   </div>
 </section>
 
-<section class="analytics">
- <div class="panel mini"><h3>Today’s Study Hours ⏱️</h3><div class="metric"><span>Hours studied</span><b id="hoursLabel">0h 0m</b></div><input id="hours" type="range" min="0" max="12" step=".25" value="0" style="width:100%" oninput="setHours(this.value)"><div class="metric"><span>Target</span><b>6h</b></div><div class="legend">Green ↑ = more progress than yesterday • Blue → = same • Red ↓ = less.</div></div>
- <div class="panel mini"><h3>Progress intelligence 📈</h3><div class="metric"><span>Completed topics</span><b id="doneLabel">0</b></div><div class="metric"><span>MCQs logged</span><b id="mcqLabel">0</b></div><div class="metric"><span>Estimated syllabus</span><b>NEET 2026</b></div><div class="legend">Importance tags are study-priority guidance, not official NTA weightage predictions.</div></div>
-</section>
+<section class="panel statsDash" id="statsDashboard">
+  <div class="detailHead">
+    <div>
+      <h2>📊 Statistics & Analytics</h2>
+      <p>Real progress from your completed topics, MCQs and study hours.</p>
+    </div>
+    <div class="trend flat" id="statsTrend">● Start tracking</div>
+  </div>
 
+  <div class="statsTop">
+    <div class="statCard"><div class="k">CURRENT STREAK</div><div class="v" id="statStreak">0 days</div><div class="s" id="bestStreakText">Best: 0 days</div></div>
+    <div class="statCard"><div class="k">STUDY HOURS</div><div class="v" id="statHours">0h</div><div class="s" id="hourDelta">Today</div></div>
+    <div class="statCard"><div class="k">MCQs</div><div class="v" id="statMcqs">0</div><div class="s" id="accuracyText">No accuracy data</div></div>
+    <div class="statCard"><div class="k">TOPICS</div><div class="v" id="statTopics">0%</div><div class="s" id="topicDelta">0 completed</div></div>
+  </div>
+
+  <div class="statsToolbar">
+    <button id="range7" class="active" onclick="setStatsRange(7)">7 Days</button>
+    <button id="range30" onclick="setStatsRange(30)">30 Days</button>
+    <button id="range90" onclick="setStatsRange(90)">90 Days</button>
+  </div>
+
+  <div class="chartBox">
+    <div style="font-weight:900;margin-bottom:5px">📈 Study hours & completed topics</div>
+    <canvas id="progressChart" width="900" height="260"></canvas>
+    <div class="legend">Blue line = study hours • Green line = topics completed that day</div>
+  </div>
+
+  <div class="analytics" style="margin-top:14px">
+    <div class="panel mini">
+      <h3>Subject Performance</h3>
+      <div id="subjectBars" class="subjectBars"></div>
+    </div>
+    <div class="panel mini">
+      <h3>🎯 Study Target</h3>
+      <div class="metric"><span>Today's hours</span><b id="targetHoursLabel">0h</b></div>
+      <div class="bar"><div id="targetHoursFill" class="fill" style="width:0%"></div></div>
+      <div class="metric"><span>Daily target</span><b>6h</b></div>
+      <div class="metric"><span>Today's topics</span><b id="todayTopicsLabel">0</b></div>
+      <div class="metric"><span>Today's MCQs</span><b id="todayMcqLabel">0</b></div>
+      <div id="analyticsInsight" class="insight">Start logging study activity to unlock your personal trend insights.</div>
+    </div>
+  </div>
+</section>
 <section class="premium"><div><h3>⚡ Focus Mode — Premium-style dashboard</h3><p>Daily streaks, topic analytics, MCQ targets and revision planning can be added next.</p></div><button class="gold" onclick="alert('Focus Mode activated for this demo ✨')">ACTIVATE</button></section>
 </main>
 
@@ -114,8 +173,21 @@ Zoology:[
 ]};
 const state=JSON.parse(localStorage.getItem("neetTracker")||"{}");
 state.done=state.done||{}; state.mcq=state.mcq||{}; state.hours=state.hours||0; state.prev=state.prev||{};
+state.history=state.history||{};
+state.mcqHistory=state.mcqHistory||{};
+state.topicHistory=state.topicHistory||{};
 let current="Physics", filter="all";
 function save(){localStorage.setItem("neetTracker",JSON.stringify(state));}
+function ensureDay(k=localDateKey()){
+  state.history[k]=state.history[k]||{hours:0,mcq:0,topics:0};
+  return state.history[k];
+}
+function recordTodaySnapshot(){
+  const day=ensureDay();
+  day.hours=Number(state.hours)||0;
+  day.mcq=Object.values(state.mcq).reduce((a,v)=>a+(Number(v)||0),0);
+  day.topics=Object.keys(state.done).filter(k=>state.done[k]).length;
+}
 function subjectProgress(s){let a=syllabus[s];return Math.round(a.reduce((x,t)=>x+(state.done[s+"|"+t[0]]?1:0),0)/a.length*100)}
 function totalProgress(){let n=0,d=0;for(const s in syllabus){n+=syllabus[s].length;d+=syllabus[s].filter(t=>state.done[s+"|"+t[0]]).length}return Math.round(d/n*100)}
 function renderSubjects(){let el=document.getElementById("subjects");el.innerHTML=Object.keys(syllabus).map(s=>`<div class="subject ${s===current?'active':''}" onclick="selectSubject('${s}')"><div class="subtop"><div class="subname">${s}</div><div class="badge">${syllabus[s].length} topics</div></div><div class="bar"><div class="fill" style="width:${subjectProgress(s)}%"></div></div><div class="substats"><span>${subjectProgress(s)}% complete</span><span>${s==='Physics'||s==='Chemistry'?'MCQ':'Revision'}</span></div></div>`).join("")}
@@ -123,13 +195,138 @@ function renderTopics(){let q=document.getElementById("search").value.toLowerCas
 document.getElementById("topicList").innerHTML=arr.map(t=>{let k=current+"|"+t[0],done=!!state.done[k];return `<div class="topic ${done?'done':''}"><input type="checkbox" ${done?'checked':''} onchange="toggleTopic('${current}','${t[0].replaceAll("'","\\'")}')"><div class="name">${t[0]}</div><div class="importance ${t[1]==='high'?'high':t[1]==='med'?'med':'low'}">${t[1].toUpperCase()}</div><div class="mcq">${current==='Physics'||current==='Chemistry'?`MCQ <input type="number" min="0" value="${state.mcq[k]||0}" onchange="setMcq('${current}','${t[0].replaceAll("'","\\'")}',this.value)">`: 'Revision'}</div><div class="time">~${t[2]} MCQs*</div></div>`}).join("")||`<p style="color:var(--muted)">No topics found.</p>`;
 document.getElementById("detailTitle").textContent=current;document.getElementById("detailSub").textContent=`${subjectProgress(current)}% of ${syllabus[current].length} topics complete`;trend();}
 function selectSubject(s){current=s;filter="all";renderSubjects();renderTopics()}
-function toggleTopic(s,t){let k=s+"|"+t;state.done[k]=!state.done[k];save();renderAll()}
-function setMcq(s,t,v){state.mcq[s+"|"+t]=Number(v)||0;save();updateMetrics()}
-function setHours(v){state.hours=Number(v);save();document.getElementById("hoursLabel").textContent=Math.floor(v)+"h "+Math.round((v%1)*60)+"m"}
+function toggleTopic(s,t){
+  let k=s+"|"+t, wasDone=!!state.done[k];
+  state.done[k]=!wasDone;
+  const today=ensureDay();
+  if(!wasDone) today.topics=(today.topics||0)+1;
+  else today.topics=Math.max(0,(today.topics||0)-1);
+  state.topicHistory[localDateKey()+"|"+k]=!wasDone;
+  save();renderAll();
+}
+function setMcq(s,t,v){
+  state.mcq[s+"|"+t]=Math.max(0,Number(v)||0);
+  recordTodaySnapshot(); save(); updateMetrics(); updateStatsDashboard();
+}
+function setHours(v){
+  state.hours=Number(v)||0;
+  ensureDay().hours=state.hours;
+  save();
+  document.getElementById("hoursLabel").textContent=Math.floor(state.hours)+"h "+Math.round((state.hours%1)*60)+"m";
+  updateStatsDashboard();
+}
 function trend(){let p=subjectProgress(current),prev=state.prev[current]??p,d=p-prev;let e=document.getElementById("trend");e.className="trend "+(d>0?"up":d<0?"down":"flat");e.textContent=d>0?`▲ +${d}% vs last check`:d<0?`▼ ${d}% vs last check`:`● Same as last check`}
 function updateOverall(){let p=totalProgress();document.getElementById("overallPct").textContent=p+"%";document.getElementById("overallRing").style.background=`conic-gradient(var(--blue) ${p*3.6}deg,#17314c ${p*3.6}deg)`}
 function updateMetrics(){let done=0,mcq=0;Object.keys(syllabus).forEach(s=>syllabus[s].forEach(t=>{if(state.done[s+"|"+t[0]])done++;mcq+=Number(state.mcq[s+"|"+t[0]]||0)}));document.getElementById("doneLabel").textContent=done;document.getElementById("mcqLabel").textContent=mcq}
-function renderAll(){renderSubjects();renderTopics();updateOverall();updateMetrics();setHours(state.hours)}
+
+let statsRange=7;
+
+function dateKeyOffset(offset){
+  const d=new Date();
+  d.setDate(d.getDate()-offset);
+  return localDateKey(d);
+}
+function dayLabels(n){
+  const out=[];
+  for(let i=n-1;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    out.push({key:localDateKey(d),label:d.toLocaleDateString(undefined,{day:"numeric",month:"short"})});
+  }
+  return out;
+}
+function currentStreakValue(){
+  let streak=0,d=new Date();
+  while(true){
+    const k=localDateKey(d), arr=state.plans[k]||[];
+    if(!arr.some(x=>x.done)) break;
+    streak++; d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+function bestStreakValue(){
+  const keys=Object.keys(state.plans||{}).sort();
+  let best=0,run=0,prev=null;
+  for(const k of keys){
+    if(!(state.plans[k]||[]).some(x=>x.done)){run=0;prev=null;continue;}
+    const d=new Date(k+"T12:00:00");
+    if(prev){
+      const diff=Math.round((d-prev)/86400000);
+      run=diff===1?run+1:1;
+    }else run=1;
+    best=Math.max(best,run); prev=d;
+  }
+  return best;
+}
+function drawProgressChart(){
+  const c=document.getElementById("progressChart"); if(!c)return;
+  const ctx=c.getContext("2d"), rect=c.getBoundingClientRect(), ratio=window.devicePixelRatio||1;
+  const w=Math.max(320,Math.floor(rect.width)), h=220;
+  c.width=w*ratio; c.height=h*ratio; ctx.setTransform(ratio,0,0,ratio,0,0);
+  ctx.clearRect(0,0,w,h);
+  const labels=dayLabels(statsRange);
+  const vals=labels.map(x=>Number((state.history[x.key]||{}).hours||0));
+  const topics=labels.map((x,i)=>i===0?0:Math.max(0,Number((state.history[x.key]||{}).topics||0)-Number((state.history[labels[i-1].key]||{}).topics||0)));
+  const pad={l:34,r:12,t:18,b:34}, cw=w-pad.l-pad.r, ch=h-pad.t-pad.b;
+  ctx.strokeStyle="#1c3149";ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=pad.t+ch*i/4;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();}
+  const maxH=Math.max(6,...vals), maxT=Math.max(3,...topics);
+  function line(data,max,offset){
+    ctx.beginPath();
+    data.forEach((v,i)=>{const x=pad.l+(data.length===1?0:i*cw/(data.length-1));const y=pad.t+ch-(v/max)*ch; i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.strokeStyle=offset?"#35d07f":"#3da5ff";ctx.lineWidth=3;ctx.stroke();
+    data.forEach((v,i)=>{const x=pad.l+(data.length===1?0:i*cw/(data.length-1));const y=pad.t+ch-(v/max)*ch;ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle=offset?"#35d07f":"#3da5ff";ctx.fill();});
+  }
+  line(vals,maxH,0); line(topics,maxT,1);
+  ctx.fillStyle="#8ea4bd";ctx.font="11px system-ui";
+  labels.forEach((x,i)=>{if(statsRange<=7||i===0||i===labels.length-1||i%Math.ceil(statsRange/6)===0){const px=pad.l+(labels.length===1?0:i*cw/(labels.length-1));ctx.fillText(x.label,Math.max(0,px-18),h-10);}});
+}
+function updateSubjectBars(){
+  const el=document.getElementById("subjectBars"); if(!el)return;
+  el.innerHTML=Object.keys(syllabus).map(s=>{
+    const p=subjectProgress(s);
+    return `<div class="sbarRow"><b>${s}</b><div class="sbarTrack"><div class="sbarFill" style="width:${p}%"></div></div><b>${p}%</b></div>`;
+  }).join("");
+}
+function updateStatsDashboard(){
+  recordTodaySnapshot();
+  const today=ensureDay(), current=currentStreakValue(), best=bestStreakValue();
+  const totalHours=Object.values(state.history).reduce((a,d)=>a+(Number(d.hours)||0),0);
+  const totalMcq=Object.values(state.mcq).reduce((a,v)=>a+(Number(v)||0),0);
+  const done=Object.values(state.done).filter(Boolean).length, pct=totalProgress();
+  const prev=state.history[dateKeyOffset(1)]||{hours:0};
+  const delta=(Number(today.hours)||0)-(Number(prev.hours)||0);
+  document.getElementById("statStreak").textContent=current+" day"+(current===1?"":"s");
+  document.getElementById("bestStreakText").textContent="Best: "+best+" days";
+  document.getElementById("statHours").textContent=(Math.round(totalHours*10)/10)+"h";
+  document.getElementById("hourDelta").textContent=delta>0?`▲ ${delta.toFixed(1)}h vs yesterday`:delta<0?`▼ ${Math.abs(delta).toFixed(1)}h vs yesterday`:"Same as yesterday";
+  document.getElementById("statMcqs").textContent=totalMcq;
+  document.getElementById("accuracyText").textContent="Logged MCQs (attempts)";
+  document.getElementById("statTopics").textContent=pct+"%";
+  document.getElementById("topicDelta").textContent=done+" completed";
+  document.getElementById("targetHoursLabel").textContent=(Number(today.hours)||0)+"h";
+  document.getElementById("targetHoursFill").style.width=Math.min(100,(Number(today.hours)||0)/6*100)+"%";
+  const prevTopics=Number((state.history[dateKeyOffset(1)]||{}).topics||0);
+  document.getElementById("todayTopicsLabel").textContent=Math.max(0,(today.topics||0)-prevTopics);
+  const prevMcq=Number((state.history[dateKeyOffset(1)]||{}).mcq||0);
+  document.getElementById("todayMcqLabel").textContent=Math.max(0,(today.mcq||0)-prevMcq);
+  const trend=document.getElementById("statsTrend");
+  trend.className="trend "+(delta>0?"up":delta<0?"down":"flat");
+  trend.textContent=delta>0?`▲ +${delta.toFixed(1)}h today`:delta<0?`▼ ${Math.abs(delta).toFixed(1)}h today`:"● Same hours as yesterday";
+  const insight=document.getElementById("analyticsInsight");
+  if(current>=7) insight.textContent="🔥 7+ day streak! Consistency is becoming your advantage.";
+  else if(Number(today.hours)>=6) insight.textContent="🎯 Daily 6-hour target reached. Great work!";
+  else if(Number(today.hours)>0) insight.textContent=`⏱️ ${(6-Number(today.hours)).toFixed(1)}h left to reach today's 6-hour target.`;
+  else insight.textContent="Start logging study activity to unlock your personal trend insights.";
+  updateSubjectBars(); drawProgressChart();
+}
+function setStatsRange(n){
+  statsRange=n;
+  [7,30,90].forEach(x=>document.getElementById("range"+x)?.classList.toggle("active",x===n));
+  drawProgressChart();
+}
+window.addEventListener("resize",()=>drawProgressChart());
+
+function renderAll(){renderSubjects();renderTopics();updateOverall();updateMetrics();setHours(state.hours);updateStatsDashboard()}
 function showAll(){filter="all";renderTopics()}function showPending(){filter="pending";renderTopics()}function showDone(){filter="done";renderTopics()}
 function resetAll(){if(confirm("Reset all saved progress?")){localStorage.removeItem("neetTracker");location.reload()}}
 document.getElementById("search").addEventListener("input",renderTopics);
@@ -209,14 +406,9 @@ function renderPlans(){
     '<p style="color:var(--muted)">No tasks planned for this date.</p>';
 }
 function updateStreak(){
-  let streak=0, d=new Date();
-  // Count consecutive days backwards with at least one completed task.
-  while(true){
-    const k=localDateKey(d), arr=state.plans[k]||[];
-    if(!arr.some(x=>x.done))break;
-    streak++; d.setDate(d.getDate()-1);
-  }
+  let streak=currentStreakValue();
   document.getElementById("streakLabel").textContent=streak+" day"+(streak===1?"":"s");
+  if(document.getElementById("statStreak")) document.getElementById("statStreak").textContent=streak+" day"+(streak===1?"":"s");
 }
 async function requestNotifications(){
   if(!("Notification" in window)){
