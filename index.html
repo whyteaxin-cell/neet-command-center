@@ -1,22 +1,252 @@
-# NEET Command Center — Android-ready v1
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEET Command Center</title>
+<style>
+:root{--bg:#07101d;--card:#0d1a2b;--card2:#101f33;--text:#eaf3ff;--muted:#8ea4bd;--line:#1c3149;--blue:#3da5ff;--green:#35d07f;--red:#ff5364;--yellow:#ffd65a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#102846 0,#07101d 42%);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}
+header{padding:24px 5vw 12px;display:flex;justify-content:space-between;align-items:center;gap:16px;position:sticky;top:0;background:#07101de8;backdrop-filter:blur(14px);z-index:5}
+.brand{font-weight:900;font-size:25px;letter-spacing:.5px}.brand span{color:var(--blue)}
+button{border:0;border-radius:12px;padding:10px 14px;background:#17304b;color:white;cursor:pointer;font-weight:700}button:hover{filter:brightness(1.18)}
+main{max-width:1200px;margin:auto;padding:10px 5vw 60px}
+.hero{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin:18px 0}
+.panel,.subject{background:linear-gradient(145deg,#0e1c2e,#0a1523);border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 35px #0004}
+.hero .panel{padding:24px}.eyebrow{color:var(--blue);font-size:12px;font-weight:900;letter-spacing:2px}.hero h1{font-size:clamp(30px,5vw,54px);margin:7px 0}.hero p{color:var(--muted)}
+.countdown{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.countdown div{background:#071322;border:1px solid var(--line);padding:12px 16px;border-radius:14px;text-align:center;min-width:75px}.countdown b{display:block;font-size:24px}.countdown small{color:var(--muted)}
+.overall{display:flex;align-items:center;justify-content:center;min-height:260px;position:relative}.ring{width:185px;height:185px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--blue) 0deg,#17314c 0deg);position:relative}.ring:after{content:"";position:absolute;inset:12px;background:#0a1523;border-radius:50%}.ring>div{position:relative;z-index:1;text-align:center}.ring strong{font-size:40px}.ring small{display:block;color:var(--muted)}
+.subjects{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}.subject{padding:17px;cursor:pointer;transition:.2s}.subject:hover{transform:translateY(-3px);border-color:#315a7f}.subject.active{border-color:var(--blue);box-shadow:0 0 0 1px #3da5ff55}.subtop{display:flex;justify-content:space-between;align-items:center}.subname{font-size:18px;font-weight:900}.badge{font-size:11px;padding:5px 8px;border-radius:20px;background:#14283e;color:var(--muted)}.bar{height:8px;background:#15283c;border-radius:99px;overflow:hidden;margin:15px 0 8px}.fill{height:100%;background:linear-gradient(90deg,var(--blue),#73c7ff);border-radius:99px}.substats{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
+#details{padding:20px;margin-top:12px}.detailHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.detailHead h2{margin:0 0 5px}.detailHead p{margin:0;color:var(--muted)}.trend{font-weight:900}.up{color:var(--green)}.down{color:var(--red)}.flat{color:var(--blue)}
+.controls{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0}.search{flex:1;min-width:180px;background:#091525;border:1px solid var(--line);color:white;padding:11px 13px;border-radius:12px;outline:none}.topic{display:grid;grid-template-columns:28px 1fr 110px 100px 110px;align-items:center;gap:12px;padding:13px 5px;border-top:1px solid var(--line)}.topic:first-of-type{border-top:0}.topic input{width:18px;height:18px;accent-color:var(--green)}.topic .name{font-weight:700}.importance{font-size:11px;font-weight:900;text-align:center;padding:6px;border-radius:8px}.high{background:#3b2025;color:#ff8792}.med{background:#3a321b;color:#ffe27d}.low{background:#193229;color:#75e8a7}.mcq input{width:80px;background:#091525;border:1px solid var(--line);color:white;padding:8px;border-radius:9px}.mcq{color:var(--muted);font-size:12px}.topic.done .name{text-decoration:line-through;color:#6f879f}.topic.done{opacity:.75}
+.analytics{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}.mini{padding:20px}.mini h3{margin-top:0}.metric{display:flex;justify-content:space-between;margin:12px 0;color:var(--muted)}.metric b{color:white}.legend{font-size:12px;color:var(--muted);line-height:1.7}
+.premium{margin-top:18px;padding:20px;display:flex;justify-content:space-between;gap:20px;align-items:center;background:linear-gradient(100deg,#102b46,#17203b);border:1px solid #28517a;border-radius:20px}.premium h3{margin:0 0 5px}.premium p{margin:0;color:var(--muted)}.gold{background:linear-gradient(135deg,#ffd65a,#ff9f43);color:#16100a}
+@media(max-width:850px){#planner>div:nth-child(2){grid-template-columns:1fr!important}.hero{grid-template-columns:1fr}.subjects{grid-template-columns:repeat(2,1fr)}.topic{grid-template-columns:28px 1fr 80px}.topic .mcq,.topic .time{display:none}.analytics{grid-template-columns:1fr}}
+@media(max-width:500px){.subjects{grid-template-columns:1fr 1fr}.subject{padding:13px}.topic{grid-template-columns:25px 1fr 72px}.hero .panel{padding:18px}}
+</style>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#07101d"><link rel="icon" href="icon-192.png"></head>
+<body>
+<header><div class="brand">NEET<span>•</span>COMMAND</div><button onclick="resetAll()">Reset</button></header>
+<main>
+<section class="hero">
+ <div class="panel">
+  <div class="eyebrow">NEET STUDY TRACKER</div>
+  <h1>Build. Track. Improve. 🚀</h1>
+  <p>Complete topics, log MCQs and watch your preparation move up. Your data stays in this browser.</p>
+  <div class="countdown" id="countdown"></div>
+ </div>
+ <div class="panel overall"><div class="ring" id="overallRing"><div><strong id="overallPct">0%</strong><small>OVERALL</small></div></div></div>
+</section>
 
-The `www/index.html` is the upgraded app UI with:
-- monthly calendar
-- daily study planner
-- task completion
-- reminder time
-- notification permission flow
-- streak tracking
-- existing NEET syllabus/progress/MCQ tracking
+<section class="subjects" id="subjects"></section>
 
-## Android packaging
-This project is structured for Capacitor. Install Node.js, then from this folder:
+<section class="panel" id="details">
+ <div class="detailHead"><div><h2 id="detailTitle">Physics</h2><p id="detailSub">Tap a subject above to open its syllabus.</p></div><div id="trend" class="trend flat">● 0% today</div></div>
+ <div class="controls"><input class="search" id="search" placeholder="Search topics…"><button onclick="showAll()">All</button><button onclick="showPending()">Pending</button><button onclick="showDone()">Done</button></div>
+ <div id="topicList"></div>
+</section>
 
-1. `npm install`
-2. `npx cap add android`
-3. `npx cap sync android`
-4. `npx cap open android`
 
-In Android Studio, configure the notification/calendar plugins and build the APK.
 
-Note: actual background Android notifications require the native Local Notifications plugin; the HTML browser notification fallback alone is not sufficient when the app is closed.
+<section class="panel" id="calendarPanel" style="padding:20px;margin-top:18px">
+  <div class="detailHead">
+    <div><h2>🗓️ Calendar</h2><p>Monthly view of your planned study tasks.</p></div>
+    <div style="display:flex;gap:8px">
+      <button onclick="changeMonth(-1)">‹</button>
+      <button onclick="goToday()">Today</button>
+      <button onclick="changeMonth(1)">›</button>
+    </div>
+  </div>
+  <div id="calendarTitle" style="font-weight:900;font-size:18px;margin:16px 0 10px"></div>
+  <div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px"></div>
+</section>
+
+<section class="panel" id="planner" style="padding:20px;margin-top:18px">
+  <div class="detailHead">
+    <div><h2>📅 Study Planner</h2><p>Plan today's work and set a reminder.</p></div>
+    <button onclick="requestNotifications()">🔔 Enable Notifications</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px">
+    <div>
+      <label style="color:var(--muted);font-size:12px">DATE</label>
+      <input id="planDate" type="date" class="search" style="width:100%;margin-top:6px">
+    </div>
+    <div>
+      <label style="color:var(--muted);font-size:12px">REMINDER TIME</label>
+      <input id="reminderTime" type="time" class="search" style="width:100%;margin-top:6px">
+    </div>
+  </div>
+  <div style="display:flex;gap:9px;margin-top:12px;flex-wrap:wrap">
+    <input id="planTask" class="search" placeholder="e.g. Physics — Kinematics revision">
+    <button onclick="addPlan()">＋ Add task</button>
+  </div>
+  <div id="planList" style="margin-top:10px"></div>
+</section>
+
+<section class="panel" style="padding:20px;margin-top:18px">
+  <div class="detailHead">
+    <div><h2>🔥 Streak</h2><p>Complete at least one planned task each day.</p></div>
+    <div class="trend up" id="streakLabel">0 days</div>
+  </div>
+</section>
+
+<section class="analytics">
+ <div class="panel mini"><h3>Today’s Study Hours ⏱️</h3><div class="metric"><span>Hours studied</span><b id="hoursLabel">0h 0m</b></div><input id="hours" type="range" min="0" max="12" step=".25" value="0" style="width:100%" oninput="setHours(this.value)"><div class="metric"><span>Target</span><b>6h</b></div><div class="legend">Green ↑ = more progress than yesterday • Blue → = same • Red ↓ = less.</div></div>
+ <div class="panel mini"><h3>Progress intelligence 📈</h3><div class="metric"><span>Completed topics</span><b id="doneLabel">0</b></div><div class="metric"><span>MCQs logged</span><b id="mcqLabel">0</b></div><div class="metric"><span>Estimated syllabus</span><b>NEET 2026</b></div><div class="legend">Importance tags are study-priority guidance, not official NTA weightage predictions.</div></div>
+</section>
+
+<section class="premium"><div><h3>⚡ Focus Mode — Premium-style dashboard</h3><p>Daily streaks, topic analytics, MCQ targets and revision planning can be added next.</p></div><button class="gold" onclick="alert('Focus Mode activated for this demo ✨')">ACTIVATE</button></section>
+</main>
+
+<script>
+const syllabus={
+Physics:[
+["Physics and Measurement","high",45],["Kinematics","high",80],["Laws of Motion","high",70],["Work, Energy and Power","high",65],["Rotational Motion","high",75],["Gravitation","med",45],["Properties of Solids and Liquids","med",40],["Thermodynamics","high",55],["Kinetic Theory of Gases","med",35],["Oscillations","med",45],["Waves","med",40],["Electrostatics","high",75],["Current Electricity","high",80],["Magnetic Effects of Current and Magnetism","high",80],["Electromagnetic Induction and Alternating Currents","high",70],["Electromagnetic Waves","low",25],["Optics","high",85],["Dual Nature of Matter and Radiation","med",35],["Atoms and Nuclei","med",40],["Electronic Devices","med",45],["Experimental Skills","low",20]
+],
+Chemistry:[
+["Some Basic Concepts of Chemistry","high",55],["Atomic Structure","high",50],["Chemical Bonding and Molecular Structure","high",80],["Chemical Thermodynamics","high",65],["Solutions","med",45],["Equilibrium","high",75],["Redox Reactions and Electrochemistry","high",75],["Chemical Kinetics","high",55],["Classification of Elements and Periodicity","med",35],["p-Block Elements","high",70],["d- and f-Block Elements","med",45],["Coordination Compounds","high",65],["Organic Chemistry: Basic Principles","high",70],["Hydrocarbons","high",60],["Haloalkanes and Haloarenes","med",40],["Alcohols, Phenols and Ethers","med",45],["Aldehydes, Ketones and Carboxylic Acids","high",65],["Amines","med",40],["Biomolecules","low",25],["Principles Related to Practical Chemistry","low",25]
+],
+Botany:[
+["The Living World","low",20],["Biological Classification","med",35],["Plant Kingdom","high",65],["Morphology of Flowering Plants","high",55],["Anatomy of Flowering Plants","med",40],["Structural Organisation in Plants","med",35],["Cell: The Unit of Life","high",70],["Biomolecules","high",55],["Cell Cycle and Cell Division","high",55],["Transport in Plants","high",50],["Mineral Nutrition","med",40],["Photosynthesis in Plants","high",75],["Respiration in Plants","high",60],["Plant Growth and Development","high",55],["Sexual Reproduction in Flowering Plants","high",70],["Principles of Inheritance and Variation","high",80],["Molecular Basis of Inheritance","high",80],["Strategies for Enhancement in Food Production","low",25],["Microbes in Human Welfare","low",25],["Ecology: Organisms and Populations","med",45],["Ecosystem","med",45],["Biodiversity and Conservation","med",40]
+],
+Zoology:[
+["Animal Kingdom","high",70],["Structural Organisation in Animals","med",35],["Human Physiology: Digestion and Absorption","high",55],["Human Physiology: Breathing and Exchange of Gases","high",55],["Human Physiology: Body Fluids and Circulation","high",65],["Human Physiology: Excretory Products and Elimination","high",55],["Human Physiology: Locomotion and Movement","med",45],["Human Physiology: Neural Control and Coordination","high",65],["Human Physiology: Chemical Coordination and Integration","high",60],["Human Reproduction","high",70],["Reproductive Health","med",35],["Human Health and Disease","high",60],["Evolution","high",55],["Biology and Human Welfare","low",25],["Human Genetics and Mendelian Inheritance","high",70],["Molecular Genetics","high",75],["Origin and Evolution of Life","med",40],["Animal Husbandry","low",20],["Human Health: Immunology","med",35],["Biotechnology: Principles and Processes","high",65],["Biotechnology and its Applications","med",45]
+]};
+const state=JSON.parse(localStorage.getItem("neetTracker")||"{}");
+state.done=state.done||{}; state.mcq=state.mcq||{}; state.hours=state.hours||0; state.prev=state.prev||{};
+let current="Physics", filter="all";
+function save(){localStorage.setItem("neetTracker",JSON.stringify(state));}
+function subjectProgress(s){let a=syllabus[s];return Math.round(a.reduce((x,t)=>x+(state.done[s+"|"+t[0]]?1:0),0)/a.length*100)}
+function totalProgress(){let n=0,d=0;for(const s in syllabus){n+=syllabus[s].length;d+=syllabus[s].filter(t=>state.done[s+"|"+t[0]]).length}return Math.round(d/n*100)}
+function renderSubjects(){let el=document.getElementById("subjects");el.innerHTML=Object.keys(syllabus).map(s=>`<div class="subject ${s===current?'active':''}" onclick="selectSubject('${s}')"><div class="subtop"><div class="subname">${s}</div><div class="badge">${syllabus[s].length} topics</div></div><div class="bar"><div class="fill" style="width:${subjectProgress(s)}%"></div></div><div class="substats"><span>${subjectProgress(s)}% complete</span><span>${s==='Physics'||s==='Chemistry'?'MCQ':'Revision'}</span></div></div>`).join("")}
+function renderTopics(){let q=document.getElementById("search").value.toLowerCase();let arr=syllabus[current].filter(t=>t[0].toLowerCase().includes(q));if(filter==="done")arr=arr.filter(t=>state.done[current+"|"+t[0]]);if(filter==="pending")arr=arr.filter(t=>!state.done[current+"|"+t[0]]);
+document.getElementById("topicList").innerHTML=arr.map(t=>{let k=current+"|"+t[0],done=!!state.done[k];return `<div class="topic ${done?'done':''}"><input type="checkbox" ${done?'checked':''} onchange="toggleTopic('${current}','${t[0].replaceAll("'","\\'")}')"><div class="name">${t[0]}</div><div class="importance ${t[1]==='high'?'high':t[1]==='med'?'med':'low'}">${t[1].toUpperCase()}</div><div class="mcq">${current==='Physics'||current==='Chemistry'?`MCQ <input type="number" min="0" value="${state.mcq[k]||0}" onchange="setMcq('${current}','${t[0].replaceAll("'","\\'")}',this.value)">`: 'Revision'}</div><div class="time">~${t[2]} MCQs*</div></div>`}).join("")||`<p style="color:var(--muted)">No topics found.</p>`;
+document.getElementById("detailTitle").textContent=current;document.getElementById("detailSub").textContent=`${subjectProgress(current)}% of ${syllabus[current].length} topics complete`;trend();}
+function selectSubject(s){current=s;filter="all";renderSubjects();renderTopics()}
+function toggleTopic(s,t){let k=s+"|"+t;state.done[k]=!state.done[k];save();renderAll()}
+function setMcq(s,t,v){state.mcq[s+"|"+t]=Number(v)||0;save();updateMetrics()}
+function setHours(v){state.hours=Number(v);save();document.getElementById("hoursLabel").textContent=Math.floor(v)+"h "+Math.round((v%1)*60)+"m"}
+function trend(){let p=subjectProgress(current),prev=state.prev[current]??p,d=p-prev;let e=document.getElementById("trend");e.className="trend "+(d>0?"up":d<0?"down":"flat");e.textContent=d>0?`▲ +${d}% vs last check`:d<0?`▼ ${d}% vs last check`:`● Same as last check`}
+function updateOverall(){let p=totalProgress();document.getElementById("overallPct").textContent=p+"%";document.getElementById("overallRing").style.background=`conic-gradient(var(--blue) ${p*3.6}deg,#17314c ${p*3.6}deg)`}
+function updateMetrics(){let done=0,mcq=0;Object.keys(syllabus).forEach(s=>syllabus[s].forEach(t=>{if(state.done[s+"|"+t[0]])done++;mcq+=Number(state.mcq[s+"|"+t[0]]||0)}));document.getElementById("doneLabel").textContent=done;document.getElementById("mcqLabel").textContent=mcq}
+function renderAll(){renderSubjects();renderTopics();updateOverall();updateMetrics();setHours(state.hours)}
+function showAll(){filter="all";renderTopics()}function showPending(){filter="pending";renderTopics()}function showDone(){filter="done";renderTopics()}
+function resetAll(){if(confirm("Reset all saved progress?")){localStorage.removeItem("neetTracker");location.reload()}}
+document.getElementById("search").addEventListener("input",renderTopics);
+function countdown(){let end=new Date("2026-12-31T23:59:59+05:30"),now=new Date(),ms=Math.max(0,end-now),d=Math.floor(ms/86400000),h=Math.floor(ms/3600000)%24,m=Math.floor(ms/60000)%60,s=Math.floor(ms/1000)%60;document.getElementById("countdown").innerHTML=`<div><b>${d}</b><small>DAYS</small></div><div><b>${h}</b><small>HOURS</small></div><div><b>${m}</b><small>MIN</small></div><div><b>${s}</b><small>SEC</small></div>`}
+
+
+// --- Monthly calendar ---
+let calendarCursor = new Date();
+function monthName(d){return d.toLocaleString(undefined,{month:"long",year:"numeric"});}
+function changeMonth(n){calendarCursor.setMonth(calendarCursor.getMonth()+n);renderCalendar();}
+function goToday(){calendarCursor=new Date();document.getElementById("planDate").value=localDateKey();renderCalendar();renderPlans();}
+function renderCalendar(){
+  const y=calendarCursor.getFullYear(), m=calendarCursor.getMonth();
+  document.getElementById("calendarTitle").textContent=monthName(calendarCursor);
+  const first=new Date(y,m,1), last=new Date(y,m+1,0);
+  const names=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  let cells=names.map(n=>`<div style="padding:8px;text-align:center;color:var(--muted);font-size:12px;font-weight:900">${n}</div>`).join("");
+  for(let i=0;i<first.getDay();i++) cells+=`<div></div>`;
+  for(let day=1;day<=last.getDate();day++){
+    const d=new Date(y,m,day), k=localDateKey(d), tasks=state.plans[k]||[];
+    const done=tasks.filter(t=>t.done).length, total=tasks.length;
+    const today=k===localDateKey();
+    cells+=`<button onclick="selectCalendarDate('${k}')" style="min-height:64px;text-align:left;padding:8px;background:${today?'#17304b':'#091525'};border:1px solid ${today?'#3da5ff':'var(--line)'}">
+      <b>${day}</b>
+      ${total?`<div style="font-size:10px;color:var(--muted);margin-top:6px">${done}/${total} tasks</div>`:''}
+    </button>`;
+  }
+  document.getElementById("calendarGrid").innerHTML=cells;
+}
+function selectCalendarDate(k){
+  document.getElementById("planDate").value=k;
+  renderPlans();
+  document.getElementById("planner").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+// --- Calendar / planner / reminder layer ---
+state.plans = state.plans || {};
+state.streakDays = state.streakDays || [];
+
+function localDateKey(d=new Date()){
+  const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+  return x.toISOString().slice(0,10);
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function addPlan(){
+  const date=document.getElementById("planDate").value || localDateKey();
+  const task=document.getElementById("planTask").value.trim();
+  const time=document.getElementById("reminderTime").value;
+  if(!task){alert("Enter a study task.");return;}
+  state.plans[date]=state.plans[date]||[];
+  state.plans[date].push({task,time,done:false});
+  document.getElementById("planTask").value="";
+  save(); renderPlans(); updateStreak();
+}
+function togglePlan(date,i){
+  if(!state.plans[date])return;
+  state.plans[date][i].done=!state.plans[date][i].done;
+  save();renderPlans();updateStreak();
+}
+function deletePlan(date,i){
+  state.plans[date].splice(i,1);
+  if(!state.plans[date].length)delete state.plans[date];
+  save();renderPlans();updateStreak();
+}
+function renderPlans(){
+  const date=document.getElementById("planDate").value || localDateKey();
+  const arr=state.plans[date]||[];
+  document.getElementById("planList").innerHTML=arr.length ? arr.map((p,i)=>`
+    <div class="topic ${p.done?'done':''}" style="grid-template-columns:28px 1fr 100px 70px">
+      <input type="checkbox" ${p.done?'checked':''} onchange="togglePlan('${date}',${i})">
+      <div class="name">${escapeHtml(p.task)}</div>
+      <div class="badge">${p.time?escapeHtml(p.time):'No reminder'}</div>
+      <button onclick="deletePlan('${date}',${i})">Delete</button>
+    </div>`).join("") :
+    '<p style="color:var(--muted)">No tasks planned for this date.</p>';
+}
+function updateStreak(){
+  let streak=0, d=new Date();
+  // Count consecutive days backwards with at least one completed task.
+  while(true){
+    const k=localDateKey(d), arr=state.plans[k]||[];
+    if(!arr.some(x=>x.done))break;
+    streak++; d.setDate(d.getDate()-1);
+  }
+  document.getElementById("streakLabel").textContent=streak+" day"+(streak===1?"":"s");
+}
+async function requestNotifications(){
+  if(!("Notification" in window)){
+    alert("Notifications are not supported in this browser/app shell.");
+    return;
+  }
+  const p=await Notification.requestPermission();
+  if(p==="granted") alert("Notifications enabled. Scheduled reminders will be handled by the Android app layer.");
+  else alert("Notification permission was not granted.");
+}
+function scheduleBrowserReminder(task,time,date){
+  // Best-effort foreground reminder for web/PWA builds.
+  if(!("Notification" in window) || Notification.permission!=="granted" || !time)return;
+  const target=new Date(date+"T"+time+":00");
+  const delay=target-new Date();
+  if(delay>0 && delay<2147483647){
+    setTimeout(()=>new Notification("NEET Command Center",{body:task}),delay);
+  }
+}
+const _renderAll=renderAll;
+renderAll=function(){
+  _renderAll();
+  renderPlans();
+  updateStreak();
+  renderCalendar();
+};
+document.getElementById("planDate").value=localDateKey();
+document.getElementById("planDate").addEventListener("change",()=>{renderPlans();renderCalendar();});
+renderCalendar();
+
+setInterval(countdown,1000);countdown();renderAll();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{});}</script></body></html>
